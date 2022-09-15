@@ -114,11 +114,11 @@ if (toUpload) {
                     url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
 
                     // 配置账号密码
-                    println "user=${ossrhUsername},key=${ossrhPassword}"
-                    credentials {
-                        username "${ossrhUsername}"
-                        password "${ossrhPassword}"
-                    }
+//                    println "user=${ossrhUsername},key=${ossrhPassword}"
+//                    credentials {
+//                        username "${ossrhUsername}"
+//                        password "${ossrhPassword}"
+//                    }
                 }
             }
         }

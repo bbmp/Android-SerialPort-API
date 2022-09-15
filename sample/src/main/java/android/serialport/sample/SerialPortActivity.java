@@ -45,7 +45,9 @@ public abstract class SerialPortActivity extends Activity {
                 try {
                     byte[] buffer = new byte[64];
                     if (mInputStream == null) return;
+                    LogUtils.e("read ");
                     size = mInputStream.read(buffer);
+                    LogUtils.e("size = " + size);
                     if (size > 0) {
                         onDataReceived(buffer, size);
                     }

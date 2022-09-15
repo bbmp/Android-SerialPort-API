@@ -48,6 +48,7 @@ public class ConsoleActivity extends SerialPortActivity {
                 try {
                     mOutputStream.write(new String(text).getBytes());
                     mOutputStream.write('\n');
+                    LogUtils.e("Thread" + Thread.currentThread().getName());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

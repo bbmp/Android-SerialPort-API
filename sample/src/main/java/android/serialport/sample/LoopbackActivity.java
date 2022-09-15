@@ -17,13 +17,18 @@
 package android.serialport.sample;
 
 import java.io.IOException;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.TextView;
 
 public class LoopbackActivity extends SerialPortActivity {
 
     byte mValueToSend;
+
+    byte[] payload = new byte[] {1, 2, 3, 4};
     boolean mByteReceivedBack;
     Object mByteReceivedBackSemaphore = new Object();
     Integer mIncoming = new Integer(0);
@@ -36,6 +41,40 @@ public class LoopbackActivity extends SerialPortActivity {
     TextView mTextViewIncoming;
     TextView mTextViewLost;
     TextView mTextViewCorrupted;
+    private BlockingQueue blockingQueue = new ArrayBlockingQueue(1);
+
+    private class SendingThread2 extends Thread {
+        @Override
+        public void run() {
+            while (!isInterrupted()) {
+                synchronized (mByteReceivedBackSemaphore) {
+                    mByteReceivedBack = false;
+                    try {
+                        if (mOutputStream != null) {
+                            LogUtils.e("take");
+                            byte[] data = (byte[]) blockingQueue.take();
+                            mOutputStream.write(data);
+                            LogUtils.e("send" + new String(data));
+                        } else
+                            return;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        return;
+                    }
+                    try {
+                        mByteReceivedBackSemaphore.wait(100);
+                        if (mByteReceivedBack == true) {
+
+                        } else {
+
+                        }
+
+                    } catch (InterruptedException e) {
+                    }
+                }
+            }
+        }
+    }
 
     private class SendingThread extends Thread {
         @Override
@@ -45,6 +84,7 @@ public class LoopbackActivity extends SerialPortActivity {
                     mByteReceivedBack = false;
                     try {
                         if (mOutputStream != null) {
+                            LogUtils.e("send" + mValueToSend);
                             mOutputStream.write(mValueToSend);
                         } else {
                             return;
@@ -89,9 +129,38 @@ public class LoopbackActivity extends SerialPortActivity {
         mTextViewLost = (TextView) findViewById(R.id.textViewLostValue);
         mTextViewCorrupted = (TextView) findViewById(R.id.textViewCorruptedValue);
         if (mSerialPort != null) {
-            mSendingThread = new SendingThread();
-            mSendingThread.start();
+//            mSendingThread = new SendingThread();
+//            mSendingThread.start();
+            new SendingThread2().start();
+
         }
+        findViewById(R.id.btn_send).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    blockingQueue.put(new byte[] {1});
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        new Thread(){
+            @Override
+            public void run() {
+                while (true) {
+                    try {
+                        blockingQueue.put(payload);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        sleep(2000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }.start();
     }
 
     @Override

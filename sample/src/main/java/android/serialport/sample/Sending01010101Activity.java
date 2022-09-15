@@ -32,6 +32,8 @@ public class Sending01010101Activity extends SerialPortActivity {
         setContentView(R.layout.sending01010101);
         mBuffer = new byte[1024];
         Arrays.fill(mBuffer, (byte) 0x55);
+        mBuffer = SerialVentilator.packTest();
+
         if (mSerialPort != null) {
             mSendingThread = new SendingThread();
             mSendingThread.start();
@@ -50,6 +52,7 @@ public class Sending01010101Activity extends SerialPortActivity {
                 try {
                     if (mOutputStream != null) {
                         mOutputStream.write(mBuffer);
+                        LogUtils.e(StringUtils.bytes2Hex(mBuffer));
                     } else {
                         return;
                     }
